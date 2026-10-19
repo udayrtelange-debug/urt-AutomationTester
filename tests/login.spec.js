@@ -1,30 +1,30 @@
-import { test, expect } from '@playwright/test';
+const { test, expect } = require('@playwright/test');
+const { LoginPage } = require('../pages/loginPage');
+const users = require('../data/users');
 
-test('user login with valid credentials', async ({ page }) => {
-  await page.goto('/');
-    await page.fill('#user-name', 'standard_user');
-    await page.fill('#password', 'secret_sauce');
-    await page.click('#login-button');
-    await expect(page).toHaveURL('https://www.saucedemo.com/inventory.html');
-    await expect(page.locator('.title')).toHaveText('Products');
+let loginPage;
+
+test.beforeEach(async ({ page }) => {
+    loginPage = new LoginPage(page);
+    await loginPage.open();
 });
 
+test('user login with valid user', async ({ page }) => {
+    loginPage = new LoginPage(page);
+    await loginPage.login(users.validUser.username, users.validUser.password);
+    await loginPage.toHaveURL(users.title.producturl);
+});
 
 test('user login with invalid user', async ({ page }) => {
-  await page.goto('/');
-    await page.fill('#user-name', 'uday');
-    await page.fill('#password', 'secret_sauce');
-    await page.click('#login-button');
-    //await expect(page).toHaveURL('https://www.saucedemo.com/inventory.html');
-    //await expect(page.locator('.title')).toHaveText('Products');
+    loginPage = new LoginPage(page);
+    await loginPage.login(users.invalidUser.username, users.invalidUser.password);
+    const errorMessage = await loginPage.getErrorMessage();
+    expect(errorMessage).toContain(users.validateText.errorMessage);
 });
 
-
 test('user login with invalid password', async ({ page }) => {
-  await page.goto('/');
-    await page.fill('#user-name', 'uday');
-    await page.fill('#password', 'secret_sauce');
-    await page.click('#login-button');
-    //await expect(page).toHaveURL('https://www.saucedemo.com/inventory.html');
-    //await expect(page.locator('.title')).toHaveText('Products');
+    loginPage = new LoginPage(page);
+    await loginPage.login(users.invalidPassword.username, users.invalidPassword.password);
+    const errorMessage = await loginPage.getErrorMessage();
+    expect(errorMessage).toContain(users.validateText.errorMessage);
 });
